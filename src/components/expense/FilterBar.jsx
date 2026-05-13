@@ -1,17 +1,18 @@
-const filters = ['Tất cả', 'Food', 'Shopping'];
-
-export default function FilterBar({ setFilter }) {
+export default function FilterBar({ setFilter, categories }) {
   return (
-    <div className="flex gap-2 flex-wrap">
-      {filters.map((f) => (
-        <button
-          key={f}
-          onClick={() => setFilter(f)}
-          className="glass px-4 py-2 rounded-full text-sm hover:scale-105 transition"
-        >
-          {f}
-        </button>
-      ))}
+    <div className="w-full">
+      <select
+        onChange={(e) => setFilter(e.target.value)}
+        className="w-full p-3 rounded-lg bg-[#1f2937] text-white border border-white/10 outline-none focus:border-orange-400 transition"
+      >
+        <option value="Tất cả">🐰 Tất cả</option>
+
+        {categories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.icon} {c.name}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }

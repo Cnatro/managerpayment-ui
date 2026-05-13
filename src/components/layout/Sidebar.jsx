@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -9,6 +9,8 @@ import {
   Tags,
   Zap,
 } from 'lucide-react';
+import { apiCharts } from '../../services/api';
+import { formatVND } from '../../shared/utils/format';
 
 const navItems = [
   {
@@ -44,6 +46,35 @@ const navItems = [
 ];
 
 export default function Sidebar() {
+  const [loading, setLoading] = useState(true);
+  const [processingData, setProcessingData] = useState({});
+
+  const fetchProcessing = async () => {
+    try {
+      setLoading(true);
+
+      const res = await apiCharts.processing();
+      setProcessingData(res.data || []);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProcessing();
+  }, []);
+
+  const budget = processingData?.[0] || {};
+
+  const totalBudget = budget.amount || 0;
+  const totalExpense = budget.totalExpense || 0;
+  const remaining = budget.used || 0;
+
+  const percentUsed = totalBudget ? (totalExpense / totalBudget) * 100 : 0;
+
+  const progressWidth = Math.min(percentUsed, 100);
+  const isOverBudget = remaining < 0;
+
   return (
     <aside className="h-screen w-72 bg-[#121212] border-r border-[#2C2C2E] flex flex-col">
       {/* Logo */}
@@ -93,24 +124,72 @@ export default function Sidebar() {
 
       {/* Bottom Status Panel */}
       <div className="p-4 border-t border-[#2C2C2E]">
-        <div className="bg-[#1E1E1E] rounded-2xl p-4 border border-[#2C2C2E]">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-[#98989D']">Ngân sách tháng</span>
+        <div className="relative overflow-hidden rounded-3xl p-5 border border-white/5 bg-gradient-to-br from-[#1E1E1E] to-[#141414] shadow-lg">
+          {/* glow effect */}
+          <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-400/10 blur-3xl rounded-full" />
 
-            <span className="text-[#32D74B] text-xs font-medium">
-              Đang hoạt động
-            </span>
+          {/* Header */}
+          <div className="relative z-10 flex items-center justify-between mb-4">
+            <div>
+              <p className="text-sm text-[#98989D]">Ngân sách tháng</p>
+              <h3 className="text-white text-2xl font-bold mt-1">
+                {formatVND(totalBudget)}
+              </h3>
+            </div>
+
+            <div
+              className={`px-3 py-1 rounded-full text-xs font-medium ${
+                isOverBudget
+                  ? 'bg-red-500/20 text-red-400'
+                  : 'bg-green-500/20 text-green-400'
+              }`}
+            >
+              {isOverBudget ? 'Vượt mức' : 'Ổn định'}
+            </div>
           </div>
 
-          <h3 className="text-white text-xl font-bold font-mono">$4,200</h3>
+          {/* Expense info */}
+          <div className="relative z-10 flex justify-between text-sm mb-3">
+            <div>
+              <p className="text-[#98989D]">Đã chi</p>
+              <p className="text-white font-semibold">
+                {formatVND(totalExpense)}
+              </p>
+            </div>
 
-          <div className="w-full h-2 bg-[#2C2C2E] rounded-full mt-3">
-            <div className="w-[65%] h-full bg-[#00E5FF] rounded-full"></div>
+            <div className="text-right">
+              <p className="text-[#98989D]">
+                {isOverBudget ? 'Vượt' : 'Còn lại'}
+              </p>
+              <p
+                className={`font-semibold ${
+                  isOverBudget ? 'text-red-400' : 'text-green-400'
+                }`}
+              >
+                {formatVND(Math.abs(remaining))}
+              </p>
+            </div>
           </div>
 
-          <p className="text-[#98989D] text-xs mt-2">
-            Đã sử dụng 65% ngân sách
-          </p>
+          {/* Progress */}
+          <div className="relative z-10">
+            <div className="w-full h-3 bg-[#2C2C2E] rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  isOverBudget
+                    ? 'bg-gradient-to-r from-red-400 to-red-500'
+                    : 'bg-gradient-to-r from-cyan-400 to-blue-500'
+                }`}
+                style={{ width: `${progressWidth}%` }}
+              />
+            </div>
+
+            <p className="text-xs text-[#98989D] mt-2">
+              {isOverBudget
+                ? `Bạn đã vượt ${formatVND(Math.abs(remaining))}`
+                : `Đã sử dụng ${percentUsed.toFixed(1)}% ngân sách`}
+            </p>
+          </div>
         </div>
       </div>
     </aside>

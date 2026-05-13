@@ -11,6 +11,7 @@ import IncomeChart from '../components/income/IncomeChart';
 import Button from '../components/ui/Button';
 import { apiIncome } from '../services/api';
 import Loader from '../components/ui/Loader';
+import { formatVND } from '../shared/utils/format';
 
 const Income = () => {
   const [balance, setBalance] = useState(0);
@@ -119,9 +120,6 @@ const Income = () => {
     }
   };
 
-  const formatVND = (value) =>
-    new Intl.NumberFormat('vi-VN').format(value) + 'đ';
-
   // =========================
   // LOADING
   // =========================
@@ -163,13 +161,13 @@ const Income = () => {
 
             <div className="flex gap-2 mt-4">
               <Button
-                className="bg-gray-600"
+                className="bg-gray-600 cursor-pointer"
                 onClick={() => setShowModal(false)}
               >
                 Hủy
               </Button>
 
-              <Button onClick={handleAddIncome}>Xác nhận</Button>
+              <Button className="cursor-pointer" onClick={handleAddIncome}>Xác nhận</Button>
             </div>
           </div>
         </div>
@@ -196,7 +194,7 @@ const Income = () => {
           <RabbitLevel balance={balance} />
 
           <div className="flex gap-4 mt-6">
-            <Button onClick={() => setShowModal(true)}>+ Thêm thu nhập</Button>
+            <Button className="cursor-pointer" onClick={() => setShowModal(true)}>+ Thêm thu nhập</Button>
           </div>
         </div>
 

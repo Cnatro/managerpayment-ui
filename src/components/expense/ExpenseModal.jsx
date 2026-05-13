@@ -1,28 +1,64 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { formatVND } from '../../shared/utils/format';
 
-export default function ExpenseModal({ onClose, onAdd }) {
+export default function ExpenseModal({
+  onClose,
+  onAdd,
+  onUpdate,
+  editItem,
+  categories = [],
+}) {
   const [form, setForm] = useState({
-    Category: '',
-    Amount: '',
-    Note: '',
+    categoryId: '',
+    amount: '',
+    note: '',
+    date: '',
   });
 
+  // =========================
+  // INIT FORM WHEN EDIT
+  // =========================
+  useEffect(() => {
+    if (editItem) {
+      setForm({
+        categoryId: editItem.categoryId || '',
+        amount: editItem.amount || '',
+        note: editItem.note || '',
+        date: editItem.date || '',
+      });
+    } else {
+      setForm({
+        categoryId: '',
+        amount: '',
+        note: '',
+        date: new Date().toISOString().slice(0, 10),
+      });
+    }
+  }, [editItem]);
+
+  // =========================
+  // SUBMIT
+  // =========================
   const handleSubmit = () => {
-    // 🚨 VALIDATION (QUAN TRỌNG)
-    if (!form.Category || !form.Amount) {
-      alert('Nhập Category + Amount đi đã 🐰');
+    if (!form.categoryId || !form.amount) {
+      alert('Chọn category + nhập amount 🐰');
       return;
     }
 
-    onAdd({
-      id: Date.now(),
-      Category: form.Category,
-      Amount: Number(form.Amount),
-      Month: 'May',
-      WeekDate: new Date().toISOString().slice(0, 10),
-      Note: form.Note || '',
-    });
+    const payload = {
+      ...editItem,
+      categoryId: Number(form.categoryId),
+      amount: Number(form.amount),
+      note: form.note || '',
+      date: form.date || new Date().toISOString().slice(0, 10),
+    };
+
+    if (editItem) {
+      onUpdate(payload);
+    } else {
+      onAdd(payload);
+    }
 
     onClose();
   };
@@ -32,41 +68,61 @@ export default function ExpenseModal({ onClose, onAdd }) {
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-[#111827] p-6 rounded-2xl w-[320px] border border-white/10"
+        className="bg-[#111827] p-6 rounded-2xl w-[340px] border border-white/10"
       >
-        <h2 className="text-white text-lg mb-4">➕ Thêm Expense</h2>
+        <h2 className="text-white text-lg mb-4">
+          {editItem ? '✏️ Edit Expense' : '➕ Thêm Expense'}
+        </h2>
 
-        {/* CATEGORY */}
+        {/* ================= CATEGORY SELECT ================= */}
+        <select
+          value={form.categoryId}
+          onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+          className="w-full p-3 mb-2 rounded-lg bg-[#1f2937] text-white border border-white/10 outline-none focus:border-orange-400 transition"
+        >
+          <option value="">-- Chọn danh mục --</option>
+
+          {categories.map((c) => (
+            <option key={c.id} value={c.id} className="text-black">
+              {c.icon} {c.name}
+            </option>
+          ))}
+        </select>
+
         <input
-          placeholder="Category (Food, Shopping...)"
-          value={form.Category}
-          onChange={(e) => setForm({ ...form, Category: e.target.value })}
+          type="date"
+          value={form.date}
+          onChange={(e) => setForm({ ...form, date: e.target.value })}
           className="w-full p-2 mb-2 rounded bg-black/40 text-white border border-white/10"
         />
 
-        {/* AMOUNT */}
+        {/* ================= AMOUNT ================= */}
         <input
           placeholder="Amount (VD: 200000)"
-          value={form.Amount}
-          onChange={(e) => setForm({ ...form, Amount: e.target.value })}
+          value={form.amount}
+          onChange={(e) => setForm({ ...form, amount: e.target.value })}
           className="w-full p-2 mb-2 rounded bg-black/40 text-white border border-white/10"
         />
 
-        {/* NOTE */}
-        <input
+        <div className="text-green-400 text-sm mt-1">
+          {form.amount > 0 && formatVND(form.amount)}
+        </div>
+
+        {/* ================= NOTE ================= */}
+        <textarea
           placeholder="Note"
-          value={form.Note}
-          onChange={(e) => setForm({ ...form, Note: e.target.value })}
+          value={form.note}
+          onChange={(e) => setForm({ ...form, note: e.target.value })}
           className="w-full p-2 mb-4 rounded bg-black/40 text-white border border-white/10"
         />
 
-        {/* BUTTONS */}
+        {/* ================= BUTTONS ================= */}
         <div className="flex gap-2">
           <button
             onClick={handleSubmit}
             className="flex-1 bg-orange-400 text-black py-2 rounded-xl hover:scale-105 transition"
           >
-            🥕 Add
+            {editItem ? '🥕 Update' : '🥕 Add'}
           </button>
 
           <button

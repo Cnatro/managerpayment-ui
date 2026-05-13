@@ -1,36 +1,21 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import FloatingBackground from '../components/expense/FloatingBackground';
 import RabbitSection from '../components/expense/RabbitSection';
 import FilterBar from '../components/expense/FilterBar';
 import ExpenseCard from '../components/expense/ExpenseCard';
 import ExpenseModal from '../components/expense/ExpenseModal';
 import { CarrotBurst } from '../components/expense/CarrotBurst';
-
-export const expenses = [
-  {
-    id: 1,
-    Category: 'Food',
-    Amount: 200000,
-    Month: 'May',
-    WeekDate: '2026-05-12',
-    Note: 'Milk tea 🧋',
-  },
-  {
-    id: 2,
-    Category: 'Shopping',
-    Amount: 450000,
-    Month: 'May',
-    WeekDate: '2026-05-10',
-    Note: 'Keyboard ⌨️',
-  },
-];
+import { apiCategories, apiExpenses } from '../services/api';
+import Loader from '../components/ui/Loader';
 
 export const convertToCarrot = (amount) => {
   return Math.floor(amount / 10000); // 10k = 1 🥕
 };
 
-export default function ExpensePage() {
-  const [data, setData] = useState(expenses);
+export default function Expenses() {
+  const [loading, setLoading] = useState(true);
+  const [expenses, setExpenses] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState('Tất cả');
 
@@ -39,46 +24,123 @@ export default function ExpensePage() {
 
   // 💥 carrot burst effect
   const [burst, setBurst] = useState(false);
+  const [editItem, setEditItem] = useState(null);
 
-  const total = data.reduce((a, b) => a + b.Amount, 0);
+  const total = expenses.reduce((a, b) => a + b.amount, 0);
   const carrots = Math.floor(total / 10000);
 
   const filtered =
-    filter === 'Tất cả' ? data : data.filter((d) => d.Category === filter);
+    filter === 'Tất cả'
+      ? expenses
+      : expenses.filter((d) => d.categoryId === Number(filter));
 
+  // GET
+  const fetchExpenses = async () => {
+    try {
+      setLoading(true);
+
+      const res = await apiExpenses.get();
+      setExpenses(res.data || []);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+
+      const res = await apiCategories.get();
+      setCategories(res.data || []);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchExpenses();
+    fetchCategories();
+  }, []);
   // =========================
   // ➕ ADD EXPENSE
   // =========================
-  const addExpense = (item) => {
-    setData((prev) => [item, ...prev]);
+  const addExpense = async (item) => {
+    try {
+      setLoading(true);
+      const res = await apiExpenses.create(item);
 
-    setLastAction('add');
+      if (res.status === 201) {
+        setExpenses((prev) => [item, ...prev]);
 
-    // trigger effect
-    setBurst(true);
-    setTimeout(() => setBurst(false), 900);
+        setLastAction('add');
+
+        // trigger effect
+        setBurst(true);
+        setTimeout(() => setBurst(false), 900);
+      }
+    } catch (error) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // =========================
   // ❌ DELETE EXPENSE
   // =========================
-  const deleteExpense = (id) => {
-    setData((prev) => prev.filter((d) => d.id !== id));
+  const deleteExpense = async (id) => {
+    try {
+      setLoading(true);
+      const res = await apiExpenses.delete(id);
 
-    setLastAction('delete');
+      if (res.status === 200) {
+        setExpenses((prev) => prev.filter((d) => d.id !== id));
 
-    setBurst(true);
-    setTimeout(() => setBurst(false), 900);
+        setLastAction('delete');
+
+        setBurst(true);
+        setTimeout(() => setBurst(false), 900);
+      }
+    } catch (error) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // =========================
   // ✏️ UPDATE (future ready)
   // =========================
-  const updateExpense = (updated) => {
-    setData((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+  const updateExpense = async (updated) => {
+    try {
+      setLoading(true);
+      const res = await apiExpenses.update(updated.id, updated);
 
-    setLastAction('update');
+      if (res.status === 200) {
+        setExpenses((prev) =>
+          prev.map((d) => (d.id === updated.id ? updated : d)),
+        );
+
+        setLastAction('update');
+      }
+    } catch (error) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const onEdit = (item) => {
+    setEditItem(item);
+    setOpen(true);
+  };
+
+  const categoryMap = categories.reduce((acc, c) => {
+    acc[c.id] = c;
+    return acc;
+  }, {});
+
+  if (loading) return <Loader className="mt-20" />;
 
   return (
     <div className="min-h-screen p-5 relative overflow-hidden bg-[#0B0F1A] text-white">
@@ -93,7 +155,10 @@ export default function ExpensePage() {
         <h1 className="text-2xl font-bold">🐰</h1>
 
         <button
-          onClick={() => setOpen(true)}
+          onClick={() => {
+            setEditItem(null);
+            setOpen(true);
+          }}
           className="bg-orange-400 px-4 py-2 rounded-xl text-white hover:scale-105 transition"
         >
           ➕ Thêm
@@ -111,7 +176,7 @@ export default function ExpensePage() {
 
       {/* FILTER */}
       <div className="mt-4 relative z-10">
-        <FilterBar setFilter={setFilter} />
+        <FilterBar setFilter={setFilter} categories={categories} />
       </div>
 
       {/* EXPENSE LIST */}
@@ -122,14 +187,26 @@ export default function ExpensePage() {
           </div>
         ) : (
           filtered.map((item) => (
-            <ExpenseCard key={item.id} item={item} onDelete={deleteExpense} />
+            <ExpenseCard
+              key={item.id}
+              item={item}
+              category={categoryMap[item.categoryId]}
+              onDelete={deleteExpense}
+              onEdit={onEdit}
+            />
           ))
         )}
       </div>
 
       {/* MODAL */}
       {open && (
-        <ExpenseModal onClose={() => setOpen(false)} onAdd={addExpense} />
+        <ExpenseModal
+          onClose={() => setOpen(false)}
+          onAdd={addExpense}
+          onUpdate={updateExpense}
+          editItem={editItem}
+          categories={categories}
+        />
       )}
     </div>
   );

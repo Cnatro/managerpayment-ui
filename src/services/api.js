@@ -66,7 +66,9 @@ export const apiIncome = {
 
 // BUDGET API
 export const apiBudgets = {
-  get: () => apiClient.get('/budgets'),
+  get: (filter) => apiClient.get('/budgets', { params: filter }),
+
+  getDetail: (id) => apiClient.get(`/budgets/${id}`),
 
   create: (data) => apiClient.post('/budgets', data),
 
@@ -106,4 +108,6 @@ export const apiCharts = {
   category: () => apiClient.get('/charts/categories'),
 
   dashboard: () => apiClient.get('/charts/dashboard'),
+
+  processing: () => apiClient.get('/charts/processing'),
 };

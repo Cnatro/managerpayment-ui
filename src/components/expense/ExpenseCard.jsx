@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 
-export default function ExpenseCard({ item, onDelete }) {
-  const carrots = Math.floor(item.Amount / 10000);
+export default function ExpenseCard({ item, category, onDelete, onEdit }) {
+  const carrots = Math.floor(item.amount / 10000);
 
   return (
     <motion.div
@@ -10,20 +10,35 @@ export default function ExpenseCard({ item, onDelete }) {
       whileHover={{ scale: 1.03 }}
       className="glass p-4 flex justify-between items-center shadow-lg"
     >
+      {/* LEFT */}
       <div>
-        <p className="font-bold">{item.Category}</p>
-        <p className="text-xs text-gray-600">{item.Note}</p>
+        <p className="font-bold">{category?.name || 'Unknown'}</p>
+
+        <p className="text-xs text-gray-600">{item.note}</p>
+
         <p className="text-xs mt-1">
-          {item.Amount.toLocaleString()}đ = {carrots} 🥕
+          {item.amount.toLocaleString()}đ = {carrots} 🥕
         </p>
+
+        <p className="text-xs text-gray-500 mt-1">{item.date}</p>
       </div>
 
-      <button
-        onClick={() => onDelete(item.id, carrots)}
-        className="text-red-400 hover:scale-110 transition"
-      >
-        ❌
-      </button>
+      {/* RIGHT */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onEdit(item)}
+          className="text-blue-400 hover:scale-110 transition cursor-pointer"
+        >
+          ✏️
+        </button>
+
+        <button
+          onClick={() => onDelete(item.id, carrots)}
+          className="text-red-400 hover:scale-110 transition cursor-pointer"
+        >
+          ❌
+        </button>
+      </div>
     </motion.div>
   );
 }
