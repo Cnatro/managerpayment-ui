@@ -94,7 +94,7 @@ export default function Budget() {
         name: form.name,
         startDate: form.startDate,
         endDate: form.endDate,
-        limitAmount: form.limitAmount,
+        limitAmount: Number(form.limitAmount),
       };
 
       if (editWeek) {
@@ -445,13 +445,12 @@ export default function Budget() {
             />
 
             <input
-              type="text"
               placeholder="Ngân sách tối đa"
               value={form.limitAmount}
               onChange={(e) =>
                 setForm({
                   ...form,
-                  limitAmount: Number(e.target.value),
+                  limitAmount: e.target.value,
                 })
               }
               className="w-full p-2 bg-black/40 rounded"

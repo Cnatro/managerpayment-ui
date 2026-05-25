@@ -101,13 +101,24 @@ export const apiUsers = {
 
 // CHART API
 export const apiCharts = {
-  weekly: () => apiClient.get('/charts/weekly'),
-
-  monthly: () => apiClient.get('/charts/monthly'),
+  getByPeriod: (period) => apiClient.get(`/charts?period=${period}`),
 
   category: () => apiClient.get('/charts/categories'),
 
   dashboard: () => apiClient.get('/charts/dashboard'),
 
   processing: () => apiClient.get('/charts/processing'),
+};
+
+// DEDUCTIONS API
+export const apiDeductions = {
+  get: (params) => apiClient.get('/deductions', { params }),
+
+  getDetail: (id) => apiClient.get(`/deductions/${id}`),
+
+  create: (data) => apiClient.post('/deductions', data),
+
+  update: (data) => apiClient.patch('/deductions', data),
+
+  delete: (id) => apiClient.delete(`/deductions/${id}`),
 };

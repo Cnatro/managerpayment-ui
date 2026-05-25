@@ -24,14 +24,14 @@ const navItems = [
     icon: Receipt,
   },
   {
-    label: 'Theo dõi ngân sách',
+    label: 'Ngân sách',
     to: '/budget',
     icon: Wallet,
   },
   {
-    label: 'Phân tích tiết kiệm',
-    to: '/savings',
-    icon: PiggyBank,
+    label: 'Khấu trừ',
+    to: '/deduction',
+    icon: Receipt,
   },
   {
     label: 'Thu nhập',
@@ -64,9 +64,9 @@ export default function Sidebar() {
     fetchProcessing();
   }, []);
 
-  const budget = processingData?.[0] || {};
+  const budget = processingData || {};
 
-  const totalBudget = budget.amount || 0;
+  const totalBudget = budget.totalIncome || 0;
   const totalExpense = budget.totalExpense || 0;
   const remaining = budget.used || 0;
 
