@@ -1,6 +1,6 @@
 import Card from '../ui/Card';
 
-export default function IncomeStats({ balance, income, expense, carrots }) {
+export default function IncomeStats({ balance, income, expense, deduction, carrots }) {
   return (
     <Card className="bg-[#1E1E1E] p-5 rounded-2xl space-y-4">
       <h2 className="text-xl font-bold">Thống kê tài chính</h2>
@@ -15,6 +15,11 @@ export default function IncomeStats({ balance, income, expense, carrots }) {
       <div>
         <p className="text-gray-400">Thu nhập</p>
         <h3 className="text-green-400">{income.toLocaleString()}đ</h3>
+      </div>
+
+      <div>
+        <p className="text-gray-400">Khấu trừ</p>
+        <h3 className="text-red-400">{deduction.toLocaleString()}đ</h3>
       </div>
 
       <div>

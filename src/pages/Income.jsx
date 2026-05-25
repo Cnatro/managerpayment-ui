@@ -17,6 +17,7 @@ const Income = () => {
   const [balance, setBalance] = useState(0);
   const [income, setIncome] = useState(0);
   const [expense, setExpense] = useState(0);
+  const [deduction, setDeduction] = useState(0);
 
   const [carrots, setCarrots] = useState(0);
 
@@ -48,6 +49,7 @@ const Income = () => {
       setIncome(data.income);
       setExpense(data.expense);
       setCarrots(data.carrots);
+      setDeduction(data.deduction);
 
       setChartData(data.chart);
 
@@ -180,6 +182,7 @@ const Income = () => {
             balance={balance}
             income={income}
             expense={expense}
+            deduction={deduction}
             carrots={carrots}
           />
         </div>

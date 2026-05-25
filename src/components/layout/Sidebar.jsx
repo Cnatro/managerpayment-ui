@@ -68,9 +68,10 @@ export default function Sidebar() {
 
   const totalBudget = budget.totalIncome || 0;
   const totalExpense = budget.totalExpense || 0;
+  const totalDeduction = budget.totalDeduction || 0;
   const remaining = budget.used || 0;
 
-  const percentUsed = totalBudget ? (totalExpense / totalBudget) * 100 : 0;
+  const percentUsed = totalBudget ? ((totalExpense + totalDeduction) / totalBudget) * 100 : 0;
 
   const progressWidth = Math.min(percentUsed, 100);
   const isOverBudget = remaining < 0;
@@ -153,7 +154,7 @@ export default function Sidebar() {
             <div>
               <p className="text-[#98989D]">Đã chi</p>
               <p className="text-white font-semibold">
-                {formatVND(totalExpense)}
+                {formatVND(totalExpense + totalDeduction)}
               </p>
             </div>
 
